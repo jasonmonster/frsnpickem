@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS participants (
   favorite_nfl_team_id  SMALLINT UNSIGNED NULL,
   favorite_college_team VARCHAR(128) NULL,
   bio                   VARCHAR(160) NULL,
-  lodge_affiliation     ENUM('den_17','other') NULL,
+  lodge_affiliation     ENUM('den_17','other','not_elk') NULL,
   is_admin              TINYINT(1) NOT NULL DEFAULT 0,
   is_active             TINYINT(1) NOT NULL DEFAULT 1,
   created_at            DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -115,11 +115,13 @@ CREATE TABLE IF NOT EXISTS weekly_results (
   finalized             TINYINT(1) NOT NULL DEFAULT 0,
   finalized_at          DATETIME NULL,
   winner_participant_id INT UNSIGNED NULL,
+  tiebreaker_participant_id INT UNSIGNED NULL, -- set only when the tiebreaker guess actually broke a tie; feeds the tiebreaker-ace badge
   pot_cents             INT UNSIGNED NULL,
   holdback_cents        INT UNSIGNED NULL,
   UNIQUE KEY uq_weekly_results_season_week (season_id, week_number),
   CONSTRAINT fk_weekly_results_season FOREIGN KEY (season_id) REFERENCES seasons(id),
-  CONSTRAINT fk_weekly_results_winner FOREIGN KEY (winner_participant_id) REFERENCES participants(id)
+  CONSTRAINT fk_weekly_results_winner FOREIGN KEY (winner_participant_id) REFERENCES participants(id),
+  CONSTRAINT fk_weekly_results_tiebreaker FOREIGN KEY (tiebreaker_participant_id) REFERENCES participants(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS trash_talk (

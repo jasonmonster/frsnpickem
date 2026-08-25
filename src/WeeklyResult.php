@@ -15,7 +15,11 @@ class WeeklyResult
      * paid participants only (most correct picks on that week's games,
      * tiebreaker-guess accuracy as the decider), plus the pot/holdback split
      * off that week's paid-in total (Season.weekly_buy_in_cents *
-     * paid-participant count, split by Season.holdback_pct).
+     * paid-participant count, split by Season.holdback_pct). Also records
+     * whether the tiebreaker guess was actually what decided the winner
+     * (a real tie among paid participants) versus them just having the
+     * most correct picks outright — that's the tiebreaker-ace badge, see
+     * Badge::tiebreakerAceWeeks().
      *
      * Safe to call again later — re-finalizing recomputes from scratch and
      * overwrites the existing row, so correcting a payment after the fact
@@ -64,6 +68,7 @@ class WeeklyResult
         $standings = $stmt->fetchAll();
 
         $winnerId = null;
+        $tiebreakerWinnerId = null; // set below, only if a real tie needed the tiebreaker guess to break it
         if (!empty($standings)) {
             $topScore = (int) $standings[0]['correct'];
             $contenders = array_values(array_filter($standings, fn($r) => (int) $r['correct'] === $topScore));
@@ -116,6 +121,12 @@ class WeeklyResult
                     return strcmp($a['first_name'] . $a['last_name'], $b['first_name'] . $b['last_name']);
                 });
                 $winnerId = (int) $contenders[0]['id'];
+                // The tiebreaker guess is what separated this winner from
+                // the rest of the tied field — feeds the tiebreaker-ace
+                // badge (Badge::tiebreakerAceWeeks()). Left null on the
+                // outright-winner path above, since nothing needed
+                // breaking there.
+                $tiebreakerWinnerId = $winnerId;
             }
         }
 
@@ -126,16 +137,18 @@ class WeeklyResult
         $potCents = $totalCents - $holdbackCents;
 
         $upsert = $pdo->prepare(
-            'INSERT INTO weekly_results (season_id, week_number, finalized, finalized_at, winner_participant_id, pot_cents, holdback_cents)
-             VALUES (:season_id, :week_number, 1, NOW(), :winner_participant_id, :pot_cents, :holdback_cents)
+            'INSERT INTO weekly_results (season_id, week_number, finalized, finalized_at, winner_participant_id, tiebreaker_participant_id, pot_cents, holdback_cents)
+             VALUES (:season_id, :week_number, 1, NOW(), :winner_participant_id, :tiebreaker_participant_id, :pot_cents, :holdback_cents)
              ON DUPLICATE KEY UPDATE
                 finalized = 1, finalized_at = NOW(), winner_participant_id = VALUES(winner_participant_id),
+                tiebreaker_participant_id = VALUES(tiebreaker_participant_id),
                 pot_cents = VALUES(pot_cents), holdback_cents = VALUES(holdback_cents)'
         );
         $upsert->execute([
             ':season_id' => $seasonId,
             ':week_number' => $weekNumber,
             ':winner_participant_id' => $winnerId,
+            ':tiebreaker_participant_id' => $tiebreakerWinnerId,
             ':pot_cents' => $potCents,
             ':holdback_cents' => $holdbackCents,
         ]);

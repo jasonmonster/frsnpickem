@@ -25,6 +25,7 @@ $me = Auth::currentParticipant();
       <a href="/talk">Talk</a>
       <?php if (!empty($me['is_admin'])): ?>
         <a href="/admin/payments">Payments</a>
+        <a href="/admin/participants">Roster</a>
       <?php endif; ?>
       <a href="/profile"><?= View::e($me['username']) ?></a>
       <a href="/logout">Log out</a>

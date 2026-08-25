@@ -4,6 +4,9 @@ namespace Pickem;
 
 class Participant
 {
+    /** The only three valid answers to "are you an Elk?" — asked at signup, required. */
+    private const LODGE_AFFILIATIONS = ['den_17', 'other', 'not_elk'];
+
     public static function findByUsername(int $seasonId, string $username): ?array
     {
         $stmt = Database::connect()->prepare(
@@ -47,6 +50,7 @@ class Participant
         if (mb_strlen($bio) > 160) {
             $bio = mb_substr($bio, 0, 160);
         }
+        $lodgeAffiliation = self::requireLodgeAffiliation((string) ($data['lodge_affiliation'] ?? ''));
 
         $stmt = Database::connect()->prepare(
             'INSERT INTO participants
@@ -63,7 +67,7 @@ class Participant
             ':favorite_nfl_team_id'   => !empty($data['favorite_nfl_team_id']) ? (int) $data['favorite_nfl_team_id'] : null,
             ':favorite_college_team'  => trim($data['favorite_college_team'] ?? '') ?: null,
             ':bio'                    => $bio ?: null,
-            ':lodge_affiliation'      => self::normalizeLodgeAffiliation($data['lodge_affiliation'] ?? ''),
+            ':lodge_affiliation'      => $lodgeAffiliation,
         ]);
 
         return self::find((int) Database::connect()->lastInsertId());
@@ -80,6 +84,7 @@ class Participant
         if ($firstName === '' || $lastName === '') {
             throw new \InvalidArgumentException('First and last name are both required.');
         }
+        $lodgeAffiliation = self::requireLodgeAffiliation((string) ($data['lodge_affiliation'] ?? ''));
 
         $stmt = Database::connect()->prepare(
             'UPDATE participants SET
@@ -99,7 +104,7 @@ class Participant
             ':favorite_nfl_team_id'  => !empty($data['favorite_nfl_team_id']) ? (int) $data['favorite_nfl_team_id'] : null,
             ':favorite_college_team' => trim($data['favorite_college_team'] ?? '') ?: null,
             ':bio'                   => $bio ?: null,
-            ':lodge_affiliation'     => self::normalizeLodgeAffiliation($data['lodge_affiliation'] ?? ''),
+            ':lodge_affiliation'     => $lodgeAffiliation,
             ':id'                    => $id,
         ]);
 
@@ -150,9 +155,51 @@ class Participant
         return trim($participant['first_name'] . ' ' . $participant['last_name']);
     }
 
-    /** Anything other than the two known values (or blank) is treated as "not set" rather than rejected. */
+    /** Anything other than the three known values (or blank) is treated as "not set" rather than rejected. */
     public static function normalizeLodgeAffiliation(string $value): ?string
     {
-        return in_array($value, ['den_17', 'other'], true) ? $value : null;
+        return in_array($value, self::LODGE_AFFILIATIONS, true) ? $value : null;
+    }
+
+    /**
+     * Same as normalizeLodgeAffiliation(), but this is now a required
+     * question — asked at signup and re-asked on any profile save until
+     * it's answered — so a missing/invalid value is a validation error
+     * rather than a silent null.
+     *
+     * @throws \InvalidArgumentException if $value isn't one of the three valid choices.
+     */
+    public static function requireLodgeAffiliation(string $value): string
+    {
+        $normalized = self::normalizeLodgeAffiliation($value);
+        if ($normalized === null) {
+            throw new \InvalidArgumentException("Let us know if you're a 17 member, a lodge member, or not an Elk.");
+        }
+        return $normalized;
+    }
+
+    /**
+     * Admin-only: set someone else's lodge affiliation directly, without
+     * touching the rest of their profile — backs the /admin/participants
+     * roster toggle.
+     *
+     * @throws \InvalidArgumentException if $value isn't one of the three valid choices.
+     */
+    public static function updateLodgeAffiliation(int $id, string $value): void
+    {
+        $normalized = self::requireLodgeAffiliation($value);
+        $stmt = Database::connect()->prepare('UPDATE participants SET lodge_affiliation = :lodge_affiliation WHERE id = :id');
+        $stmt->execute([':lodge_affiliation' => $normalized, ':id' => $id]);
+    }
+
+    /** Every active participant in a season, name order — backs the admin roster page. */
+    public static function activeForSeason(int $seasonId): array
+    {
+        $stmt = Database::connect()->prepare(
+            'SELECT * FROM participants WHERE season_id = :season_id AND is_active = 1
+             ORDER BY first_name, last_name'
+        );
+        $stmt->execute([':season_id' => $seasonId]);
+        return $stmt->fetchAll();
     }
 }

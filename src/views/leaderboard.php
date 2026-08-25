@@ -4,6 +4,11 @@
  * @var int $week
  * @var array $standings  see Leaderboard::standings()
  * @var array $weeklyWinnerWeeks  see Badge::weeklyWinnerWeeksBySeason()
+ * @var array $perfectWeeks  see Badge::perfectWeeksBySeason()
+ * @var array $tiebreakerAceWeeks  see Badge::tiebreakerAceWeeksBySeason()
+ * @var array $ironManIds  see Badge::ironManParticipantIdsBySeason()
+ * @var int|null $championId  see Badge::trashTalkChampion()
+ * @var int|null $poopId  see Badge::trashTalkPoop()
  */
 use Pickem\Badge;
 use Pickem\Participant;
@@ -44,11 +49,56 @@ use Pickem\View;
             <span class="standings-player">
               <img class="avatar" src="<?= View::e(View::avatarUrl($p)) ?>" alt="">
               <span><?= View::e(Participant::displayName($p)) ?></span>
-              <?php $lodge = Badge::lodgeBadge($p); $wins = $weeklyWinnerWeeks[(int) $p['id']] ?? []; ?>
-              <?php if ($lodge || $wins): ?>
+              <?php
+                $pid = (int) $p['id'];
+                $lodge = Badge::lodgeBadge($p);
+                $wins = $weeklyWinnerWeeks[$pid] ?? [];
+                $perfects = $perfectWeeks[$pid] ?? [];
+                $aces = $tiebreakerAceWeeks[$pid] ?? [];
+                $isIronMan = in_array($pid, $ironManIds, true);
+                $isChampion = $championId === $pid;
+                $isPoop = $poopId === $pid;
+
+                // Priority order for the row's limited width — lodge and
+                // weekly wins first (most "who is this" signal), the rest
+                // as room allows. Capped at MAX_INLINE with a "+N" overflow
+                // chip rather than letting a badge-heavy player's row run
+                // long — see Section 15's note on this.
+                $rowChips = [];
+                if ($lodge) {
+                    $rowChips[] = ['text' => $lodge['emoji'], 'title' => $lodge['label']];
+                }
+                if ($wins) {
+                    $rowChips[] = ['text' => '🥇×' . count($wins), 'title' => 'Won week' . (count($wins) === 1 ? '' : 's') . ' ' . implode(', ', $wins)];
+                }
+                if ($perfects) {
+                    $rowChips[] = ['text' => '💯×' . count($perfects), 'title' => 'Perfect week' . (count($perfects) === 1 ? '' : 's') . ' ' . implode(', ', $perfects)];
+                }
+                if ($aces) {
+                    $rowChips[] = ['text' => '🎯×' . count($aces), 'title' => 'Tiebreaker ace week' . (count($aces) === 1 ? '' : 's') . ' ' . implode(', ', $aces)];
+                }
+                if ($isIronMan) {
+                    $rowChips[] = ['text' => '🛡️', 'title' => 'Iron Man'];
+                }
+                if ($isChampion) {
+                    $rowChips[] = ['text' => '👑', 'title' => 'Trash Talk Champion'];
+                }
+                if ($isPoop) {
+                    $rowChips[] = ['text' => '💩', 'title' => 'Poop Award'];
+                }
+
+                $maxInline = 4;
+                $visibleChips = array_slice($rowChips, 0, $maxInline);
+                $hiddenChips = array_slice($rowChips, $maxInline);
+              ?>
+              <?php if ($rowChips): ?>
                 <span class="badge-row">
-                  <?php if ($lodge): ?><span class="badge-chip"><?= $lodge['emoji'] ?></span><?php endif; ?>
-                  <?php if ($wins): ?><span class="badge-chip" title="Won week<?= count($wins) === 1 ? '' : 's' ?> <?= implode(', ', $wins) ?>">🥇×<?= count($wins) ?></span><?php endif; ?>
+                  <?php foreach ($visibleChips as $chip): ?>
+                    <span class="badge-chip" title="<?= View::e($chip['title']) ?>"><?= $chip['text'] ?></span>
+                  <?php endforeach; ?>
+                  <?php if ($hiddenChips): ?>
+                    <span class="badge-chip" title="<?= View::e(implode(' · ', array_column($hiddenChips, 'title'))) ?>">+<?= count($hiddenChips) ?></span>
+                  <?php endif; ?>
                 </span>
               <?php endif; ?>
             </span>

@@ -5,6 +5,8 @@
  * @var string|null $success
  * @var string|null $error
  * @var string|null $old
+ * @var int|null $championId  see Badge::trashTalkChampion()
+ * @var int|null $poopId  see Badge::trashTalkPoop()
  */
 use Pickem\Badge;
 use Pickem\Participant;
@@ -51,6 +53,8 @@ use Pickem\View;
             <span class="name"><?= View::e(Participant::displayName($post)) ?></span>
             <?php $lodge = Badge::lodgeBadge($post); ?>
             <?php if ($lodge): ?><span class="badge-chip"><?= $lodge['emoji'] ?></span><?php endif; ?>
+            <?php if (($championId ?? null) === (int) $post['participant_id']): ?><span class="badge-chip" title="Trash Talk Champion">👑</span><?php endif; ?>
+            <?php if (($poopId ?? null) === (int) $post['participant_id']): ?><span class="badge-chip" title="Poop Award">💩</span><?php endif; ?>
             <?php if ($post['week_number']): ?><span class="tiebreaker-tag">Week <?= (int) $post['week_number'] ?></span><?php endif; ?>
             <span class="hint"><?= View::e($post['created_at']) ?></span>
           </div>

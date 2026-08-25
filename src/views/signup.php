@@ -55,11 +55,12 @@ $old = $old ?? [];
     <label for="favorite_college_team">Favorite college team <span style="text-transform:none;font-weight:400;color:var(--muted)">(optional, just for fun)</span></label>
     <input type="text" id="favorite_college_team" name="favorite_college_team" value="<?= View::e($old['favorite_college_team'] ?? '') ?>" placeholder="e.g. Colorado Buffaloes">
 
-    <label for="lodge_affiliation">Lodge <span style="text-transform:none;font-weight:400;color:var(--muted)">(optional)</span></label>
-    <select id="lodge_affiliation" name="lodge_affiliation">
-      <option value="">— not set —</option>
-      <option value="den_17" <?= ($old['lodge_affiliation'] ?? '') === 'den_17' ? 'selected' : '' ?>>Den 17</option>
-      <option value="other" <?= ($old['lodge_affiliation'] ?? '') === 'other' ? 'selected' : '' ?>>Another lodge</option>
+    <label for="lodge_affiliation">Are you an Elk?</label>
+    <select id="lodge_affiliation" name="lodge_affiliation" required>
+      <option value="" disabled <?= empty($old['lodge_affiliation']) ? 'selected' : '' ?>>— choose one —</option>
+      <option value="den_17" <?= ($old['lodge_affiliation'] ?? '') === 'den_17' ? 'selected' : '' ?>>17 member</option>
+      <option value="other" <?= ($old['lodge_affiliation'] ?? '') === 'other' ? 'selected' : '' ?>>Lodge member (another lodge)</option>
+      <option value="not_elk" <?= ($old['lodge_affiliation'] ?? '') === 'not_elk' ? 'selected' : '' ?>>Not an Elk</option>
     </select>
 
     <label for="bio">Bio <span style="text-transform:none;font-weight:400;color:var(--muted)">(optional, one line)</span></label>

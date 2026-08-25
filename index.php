@@ -392,6 +392,44 @@ if ($path === '/admin/weekly-results/finalize' && $method === 'POST') {
     exit;
 }
 
+// --- Admin: roster (lodge affiliation toggle) -------------------------------------------------------------
+if ($path === '/admin/participants' && $method === 'GET') {
+    $me = Auth::requireAdmin();
+    $season = Season::find((int) $me['season_id']);
+    View::render('admin-participants', [
+        'pageTitle' => 'Admin — roster',
+        'participants' => Participant::activeForSeason((int) $season['id']),
+    ]);
+    exit;
+}
+
+if ($path === '/admin/participants' && $method === 'POST') {
+    $me = Auth::requireAdmin();
+    $season = Season::find((int) $me['season_id']);
+    $participants = Participant::activeForSeason((int) $season['id']);
+
+    $updated = 0;
+    foreach ($participants as $p) {
+        $value = (string) ($_POST['lodge_' . $p['id']] ?? '');
+        if ($value === '') {
+            continue; // left as "— not set —" — a quick-fix tool, not the required-question flow, so this just skips rather than erroring
+        }
+        try {
+            Participant::updateLodgeAffiliation((int) $p['id'], $value);
+            $updated++;
+        } catch (\InvalidArgumentException $e) {
+            // Shouldn't happen from a <select> with only valid options — ignore defensively.
+        }
+    }
+
+    View::render('admin-participants', [
+        'pageTitle' => 'Admin — roster',
+        'participants' => Participant::activeForSeason((int) $season['id']),
+        'success' => 'Updated ' . $updated . ' participant' . ($updated === 1 ? '' : 's') . '.',
+    ]);
+    exit;
+}
+
 // --- Results (official, finalized weeks) -------------------------------------------------------------
 if ($path === '/results' && $method === 'GET') {
     $me = Auth::requireLogin();
@@ -413,6 +451,8 @@ if ($path === '/talk' && $method === 'GET') {
         'week' => Season::currentWeek((int) $me['season_id']),
         'posts' => TrashTalk::forSeason((int) $me['season_id'], (int) $me['id']),
         'success' => isset($_GET['posted']) ? 'Posted.' : null,
+        'championId' => Badge::trashTalkChampion((int) $me['season_id']),
+        'poopId' => Badge::trashTalkPoop((int) $me['season_id']),
     ]);
     exit;
 }
@@ -438,6 +478,8 @@ if ($path === '/talk' && $method === 'POST') {
             'posts' => TrashTalk::forSeason((int) $me['season_id'], (int) $me['id']),
             'error' => $e->getMessage(),
             'old' => (string) ($_POST['body'] ?? ''),
+            'championId' => Badge::trashTalkChampion((int) $me['season_id']),
+            'poopId' => Badge::trashTalkPoop((int) $me['season_id']),
         ]);
         exit;
     }
@@ -467,6 +509,11 @@ if ($path === '/leaderboard' && $method === 'GET') {
         'week' => Season::currentWeek((int) $me['season_id']),
         'standings' => Leaderboard::standings((int) $season['id']),
         'weeklyWinnerWeeks' => Badge::weeklyWinnerWeeksBySeason((int) $season['id']),
+        'perfectWeeks' => Badge::perfectWeeksBySeason((int) $season['id']),
+        'tiebreakerAceWeeks' => Badge::tiebreakerAceWeeksBySeason((int) $season['id']),
+        'ironManIds' => Badge::ironManParticipantIdsBySeason((int) $season['id']),
+        'championId' => Badge::trashTalkChampion((int) $season['id']),
+        'poopId' => Badge::trashTalkPoop((int) $season['id']),
     ]);
     exit;
 }

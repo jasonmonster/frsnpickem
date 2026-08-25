@@ -27,5 +27,6 @@ use Pickem\View;
   <?php if (!empty($participant['is_admin'])): ?>
     <a class="btn btn-secondary" href="/admin/games">Admin: sync games</a>
     <a class="btn btn-secondary" href="/admin/payments">Admin: payments</a>
+    <a class="btn btn-secondary" href="/admin/participants">Admin: roster</a>
   <?php endif; ?>
 </div>
