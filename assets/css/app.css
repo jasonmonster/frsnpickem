@@ -536,3 +536,25 @@ button:hover, .btn:hover { filter: brightness(0.95); }
   min-width: 16px;
   text-align: center;
 }
+
+.badge-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.badge-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--navy);
+  background: var(--navy-tint);
+  padding: 2px 7px;
+  border-radius: 10px;
+  white-space: nowrap;
+}

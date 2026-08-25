@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS participants (
   favorite_nfl_team_id  SMALLINT UNSIGNED NULL,
   favorite_college_team VARCHAR(128) NULL,
   bio                   VARCHAR(160) NULL,
+  lodge_affiliation     ENUM('den_17','other') NULL,
   is_admin              TINYINT(1) NOT NULL DEFAULT 0,
   is_active             TINYINT(1) NOT NULL DEFAULT 1,
   created_at            DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

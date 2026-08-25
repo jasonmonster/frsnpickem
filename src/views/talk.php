@@ -6,6 +6,7 @@
  * @var string|null $error
  * @var string|null $old
  */
+use Pickem\Badge;
 use Pickem\Participant;
 use Pickem\TrashTalk;
 use Pickem\View;
@@ -48,6 +49,8 @@ use Pickem\View;
         <div class="talk-post-body">
           <div class="talk-post-meta">
             <span class="name"><?= View::e(Participant::displayName($post)) ?></span>
+            <?php $lodge = Badge::lodgeBadge($post); ?>
+            <?php if ($lodge): ?><span class="badge-chip"><?= $lodge['emoji'] ?></span><?php endif; ?>
             <?php if ($post['week_number']): ?><span class="tiebreaker-tag">Week <?= (int) $post['week_number'] ?></span><?php endif; ?>
             <span class="hint"><?= View::e($post['created_at']) ?></span>
           </div>

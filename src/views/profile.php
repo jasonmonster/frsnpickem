@@ -14,6 +14,13 @@ use Pickem\View;
     <div>
       <div class="name"><?= View::e($participant['first_name'] . ' ' . $participant['last_name']) ?></div>
       <div class="username">@<?= View::e($participant['username']) ?></div>
+      <?php if (!empty($badges)): ?>
+        <div class="badge-row" style="margin-top:6px;">
+          <?php foreach ($badges as $b): ?>
+            <span class="badge-chip"><?= $b['emoji'] ?> <?= View::e($b['label']) ?></span>
+          <?php endforeach; ?>
+        </div>
+      <?php endif; ?>
     </div>
   </div>
 
@@ -52,6 +59,13 @@ use Pickem\View;
 
     <label for="favorite_college_team">Favorite college team</label>
     <input type="text" id="favorite_college_team" name="favorite_college_team" value="<?= View::e($participant['favorite_college_team']) ?>">
+
+    <label for="lodge_affiliation">Lodge</label>
+    <select id="lodge_affiliation" name="lodge_affiliation">
+      <option value="">— not set —</option>
+      <option value="den_17" <?= ($participant['lodge_affiliation'] ?? '') === 'den_17' ? 'selected' : '' ?>>Den 17</option>
+      <option value="other" <?= ($participant['lodge_affiliation'] ?? '') === 'other' ? 'selected' : '' ?>>Another lodge</option>
+    </select>
 
     <label for="bio">Bio</label>
     <textarea id="bio" name="bio" maxlength="160"><?= View::e($participant['bio']) ?></textarea>

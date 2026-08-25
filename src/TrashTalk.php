@@ -14,7 +14,7 @@ class TrashTalk
     public static function forSeason(int $seasonId, ?int $viewerParticipantId = null, int $limit = 200): array
     {
         $stmt = Database::connect()->prepare(
-            'SELECT tt.*, part.first_name, part.last_name, part.username, part.photo_path, part.favorite_nfl_team_id,
+            'SELECT tt.*, part.first_name, part.last_name, part.username, part.photo_path, part.favorite_nfl_team_id, part.lodge_affiliation,
                 COALESCE(SUM(v.value), 0) AS score,
                 MAX(CASE WHEN v.participant_id = :viewer_id THEN v.value ELSE NULL END) AS my_vote
              FROM trash_talk tt

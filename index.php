@@ -20,9 +20,11 @@ require_once __DIR__ . '/src/Leaderboard.php';
 require_once __DIR__ . '/src/Payment.php';
 require_once __DIR__ . '/src/WeeklyResult.php';
 require_once __DIR__ . '/src/TrashTalk.php';
+require_once __DIR__ . '/src/Badge.php';
 require_once __DIR__ . '/src/View.php';
 
 use Pickem\Auth;
+use Pickem\Badge;
 use Pickem\Game;
 use Pickem\Grading;
 use Pickem\Leaderboard;
@@ -53,7 +55,11 @@ if ($path === '/' && $method === 'GET') {
         header('Location: /login');
         exit;
     }
-    View::render('dashboard', ['pageTitle' => "FRSN Pick'em", 'participant' => $me]);
+    View::render('dashboard', [
+        'pageTitle' => "FRSN Pick'em",
+        'participant' => $me,
+        'badges' => Badge::chipsFor($me, (int) $me['season_id']),
+    ]);
     exit;
 }
 
@@ -137,7 +143,12 @@ if ($path === '/logout') {
 // --- Profile -------------------------------------------------------------
 if ($path === '/profile' && $method === 'GET') {
     $me = Auth::requireLogin();
-    View::render('profile', ['pageTitle' => 'Your profile', 'participant' => $me, 'teams' => NflTeam::all()]);
+    View::render('profile', [
+        'pageTitle' => 'Your profile',
+        'participant' => $me,
+        'teams' => NflTeam::all(),
+        'badges' => Badge::chipsFor($me, (int) $me['season_id']),
+    ]);
     exit;
 }
 
@@ -149,6 +160,7 @@ if ($path === '/profile' && $method === 'POST') {
             'pageTitle' => 'Your profile',
             'participant' => $updated,
             'teams' => NflTeam::all(),
+            'badges' => Badge::chipsFor($updated, (int) $me['season_id']),
             'success' => 'Profile updated.',
         ]);
     } catch (\InvalidArgumentException $e) {
@@ -156,6 +168,7 @@ if ($path === '/profile' && $method === 'POST') {
             'pageTitle' => 'Your profile',
             'participant' => Participant::find((int) $me['id']),
             'teams' => NflTeam::all(),
+            'badges' => Badge::chipsFor($me, (int) $me['season_id']),
             'error' => $e->getMessage(),
         ]);
     }
@@ -171,6 +184,7 @@ if ($path === '/profile/photo' && $method === 'POST') {
             'pageTitle' => 'Your profile',
             'participant' => Participant::find((int) $me['id']),
             'teams' => NflTeam::all(),
+            'badges' => Badge::chipsFor($me, (int) $me['season_id']),
             'success' => 'Photo updated.',
         ]);
     } catch (\InvalidArgumentException $e) {
@@ -178,6 +192,7 @@ if ($path === '/profile/photo' && $method === 'POST') {
             'pageTitle' => 'Your profile',
             'participant' => $me,
             'teams' => NflTeam::all(),
+            'badges' => Badge::chipsFor($me, (int) $me['season_id']),
             'error' => $e->getMessage(),
         ]);
     }
@@ -192,6 +207,7 @@ if ($path === '/profile/pin' && $method === 'POST') {
             'pageTitle' => 'Your profile',
             'participant' => Participant::find((int) $me['id']),
             'teams' => NflTeam::all(),
+            'badges' => Badge::chipsFor($me, (int) $me['season_id']),
             'success' => 'PIN updated.',
         ]);
     } catch (\InvalidArgumentException $e) {
@@ -199,6 +215,7 @@ if ($path === '/profile/pin' && $method === 'POST') {
             'pageTitle' => 'Your profile',
             'participant' => $me,
             'teams' => NflTeam::all(),
+            'badges' => Badge::chipsFor($me, (int) $me['season_id']),
             'error' => $e->getMessage(),
         ]);
     }
@@ -449,6 +466,7 @@ if ($path === '/leaderboard' && $method === 'GET') {
         'season' => $season,
         'week' => Season::currentWeek((int) $me['season_id']),
         'standings' => Leaderboard::standings((int) $season['id']),
+        'weeklyWinnerWeeks' => Badge::weeklyWinnerWeeksBySeason((int) $season['id']),
     ]);
     exit;
 }

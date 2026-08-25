@@ -50,8 +50,8 @@ class Participant
 
         $stmt = Database::connect()->prepare(
             'INSERT INTO participants
-                (season_id, username, pin_hash, first_name, last_name, contact_email, favorite_nfl_team_id, favorite_college_team, bio)
-             VALUES (:season_id, :username, :pin_hash, :first_name, :last_name, :contact_email, :favorite_nfl_team_id, :favorite_college_team, :bio)'
+                (season_id, username, pin_hash, first_name, last_name, contact_email, favorite_nfl_team_id, favorite_college_team, bio, lodge_affiliation)
+             VALUES (:season_id, :username, :pin_hash, :first_name, :last_name, :contact_email, :favorite_nfl_team_id, :favorite_college_team, :bio, :lodge_affiliation)'
         );
         $stmt->execute([
             ':season_id'              => $seasonId,
@@ -63,6 +63,7 @@ class Participant
             ':favorite_nfl_team_id'   => !empty($data['favorite_nfl_team_id']) ? (int) $data['favorite_nfl_team_id'] : null,
             ':favorite_college_team'  => trim($data['favorite_college_team'] ?? '') ?: null,
             ':bio'                    => $bio ?: null,
+            ':lodge_affiliation'      => self::normalizeLodgeAffiliation($data['lodge_affiliation'] ?? ''),
         ]);
 
         return self::find((int) Database::connect()->lastInsertId());
@@ -87,7 +88,8 @@ class Participant
                 contact_email = :contact_email,
                 favorite_nfl_team_id = :favorite_nfl_team_id,
                 favorite_college_team = :favorite_college_team,
-                bio = :bio
+                bio = :bio,
+                lodge_affiliation = :lodge_affiliation
              WHERE id = :id'
         );
         $stmt->execute([
@@ -97,6 +99,7 @@ class Participant
             ':favorite_nfl_team_id'  => !empty($data['favorite_nfl_team_id']) ? (int) $data['favorite_nfl_team_id'] : null,
             ':favorite_college_team' => trim($data['favorite_college_team'] ?? '') ?: null,
             ':bio'                   => $bio ?: null,
+            ':lodge_affiliation'     => self::normalizeLodgeAffiliation($data['lodge_affiliation'] ?? ''),
             ':id'                    => $id,
         ]);
 
@@ -145,5 +148,11 @@ class Participant
     public static function displayName(array $participant): string
     {
         return trim($participant['first_name'] . ' ' . $participant['last_name']);
+    }
+
+    /** Anything other than the two known values (or blank) is treated as "not set" rather than rejected. */
+    public static function normalizeLodgeAffiliation(string $value): ?string
+    {
+        return in_array($value, ['den_17', 'other'], true) ? $value : null;
     }
 }

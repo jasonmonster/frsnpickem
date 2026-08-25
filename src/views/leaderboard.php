@@ -3,7 +3,9 @@
  * @var array $season
  * @var int $week
  * @var array $standings  see Leaderboard::standings()
+ * @var array $weeklyWinnerWeeks  see Badge::weeklyWinnerWeeksBySeason()
  */
+use Pickem\Badge;
 use Pickem\Participant;
 use Pickem\View;
 ?>
@@ -42,6 +44,13 @@ use Pickem\View;
             <span class="standings-player">
               <img class="avatar" src="<?= View::e(View::avatarUrl($p)) ?>" alt="">
               <span><?= View::e(Participant::displayName($p)) ?></span>
+              <?php $lodge = Badge::lodgeBadge($p); $wins = $weeklyWinnerWeeks[(int) $p['id']] ?? []; ?>
+              <?php if ($lodge || $wins): ?>
+                <span class="badge-row">
+                  <?php if ($lodge): ?><span class="badge-chip"><?= $lodge['emoji'] ?></span><?php endif; ?>
+                  <?php if ($wins): ?><span class="badge-chip" title="Won week<?= count($wins) === 1 ? '' : 's' ?> <?= implode(', ', $wins) ?>">🥇×<?= count($wins) ?></span><?php endif; ?>
+                </span>
+              <?php endif; ?>
             </span>
           </td>
           <td><?= (int) $row['correct'] ?></td>
