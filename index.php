@@ -395,6 +395,7 @@ if ($path === '/talk' && $method === 'GET') {
         'pageTitle' => 'Trash talk',
         'week' => Season::currentWeek((int) $me['season_id']),
         'posts' => TrashTalk::forSeason((int) $me['season_id'], (int) $me['id']),
+        'success' => isset($_GET['posted']) ? 'Posted.' : null,
     ]);
     exit;
 }
@@ -402,22 +403,27 @@ if ($path === '/talk' && $method === 'GET') {
 if ($path === '/talk' && $method === 'POST') {
     $me = Auth::requireLogin();
     $week = Season::currentWeek((int) $me['season_id']);
-    $success = null;
-    $error = null;
     try {
         TrashTalk::post((int) $me['season_id'], (int) $me['id'], $week, (string) ($_POST['body'] ?? ''));
-        $success = 'Posted.';
+        // Redirect rather than re-render: re-rendering the POST response
+        // directly meant reloading that page (or hitting back then forward)
+        // re-submitted the same post every time — that's what produced the
+        // repeated "you guys suck" spam. Redirecting to a GET breaks that.
+        header('Location: /talk?posted=1');
+        exit;
     } catch (\InvalidArgumentException $e) {
-        $error = $e->getMessage();
+        // Nothing was written, so re-rendering in place here is safe —
+        // no resubmission risk on a refresh since there's no POST to replay
+        // once the browser has this response.
+        View::render('talk', [
+            'pageTitle' => 'Trash talk',
+            'week' => $week,
+            'posts' => TrashTalk::forSeason((int) $me['season_id'], (int) $me['id']),
+            'error' => $e->getMessage(),
+            'old' => (string) ($_POST['body'] ?? ''),
+        ]);
+        exit;
     }
-    View::render('talk', [
-        'pageTitle' => 'Trash talk',
-        'week' => $week,
-        'posts' => TrashTalk::forSeason((int) $me['season_id'], (int) $me['id']),
-        'success' => $success,
-        'error' => $error,
-    ]);
-    exit;
 }
 
 if ($path === '/talk/vote' && $method === 'POST') {

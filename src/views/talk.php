@@ -4,6 +4,7 @@
  * @var int $week
  * @var string|null $success
  * @var string|null $error
+ * @var string|null $old
  */
 use Pickem\Participant;
 use Pickem\TrashTalk;
@@ -19,7 +20,7 @@ use Pickem\View;
 
   <form method="post" action="/talk">
     <label for="body">Post something</label>
-    <textarea id="body" name="body" maxlength="<?= TrashTalk::MAX_LENGTH ?>" placeholder="Called it." required></textarea>
+    <textarea id="body" name="body" maxlength="<?= TrashTalk::MAX_LENGTH ?>" placeholder="Called it." required><?= View::e($old ?? '') ?></textarea>
     <button type="submit">Post</button>
   </form>
 
