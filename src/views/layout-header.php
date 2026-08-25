@@ -21,6 +21,11 @@ $me = Auth::currentParticipant();
   <nav>
     <?php if ($me): ?>
       <a href="/leaderboard">Standings</a>
+      <a href="/results">Results</a>
+      <a href="/talk">Talk</a>
+      <?php if (!empty($me['is_admin'])): ?>
+        <a href="/admin/payments">Payments</a>
+      <?php endif; ?>
       <a href="/profile"><?= View::e($me['username']) ?></a>
       <a href="/logout">Log out</a>
     <?php else: ?>

@@ -131,3 +131,15 @@ CREATE TABLE IF NOT EXISTS trash_talk (
   CONSTRAINT fk_trash_talk_season FOREIGN KEY (season_id) REFERENCES seasons(id),
   CONSTRAINT fk_trash_talk_participant FOREIGN KEY (participant_id) REFERENCES participants(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS trash_talk_votes (
+  id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  trash_talk_id   INT UNSIGNED NOT NULL,
+  participant_id  INT UNSIGNED NOT NULL,
+  value           TINYINT NOT NULL, -- 1 (upvote) or -1 (downvote); no row = no vote
+  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_trash_talk_votes_post_participant (trash_talk_id, participant_id),
+  CONSTRAINT fk_trash_talk_votes_post FOREIGN KEY (trash_talk_id) REFERENCES trash_talk(id),
+  CONSTRAINT fk_trash_talk_votes_participant FOREIGN KEY (participant_id) REFERENCES participants(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

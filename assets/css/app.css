@@ -470,3 +470,69 @@ button:hover, .btn:hover { filter: brightness(0.95); }
   width: 28px;
   height: 28px;
 }
+
+.talk-post {
+  display: flex;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--navy-tint);
+}
+
+.talk-post:last-child { border-bottom: none; }
+
+.talk-post .avatar {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.talk-post-body { min-width: 0; flex: 1; }
+
+.talk-post-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.talk-post-body .name { font-size: 14px; }
+
+.talk-post-body .hint { margin-top: 0; }
+
+.vote-control {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.vote-control form { margin: 0; }
+
+.vote-btn {
+  display: block;
+  background: none;
+  border: none;
+  padding: 2px 4px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--gray);
+  cursor: pointer;
+}
+
+.vote-btn:hover { color: var(--navy); }
+
+.vote-btn.active-up { color: var(--gold); }
+
+.vote-btn.active-down { color: #D9534F; }
+
+.vote-score {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--navy);
+  min-width: 16px;
+  text-align: center;
+}

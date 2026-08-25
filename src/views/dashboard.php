@@ -16,5 +16,6 @@ use Pickem\View;
   <a class="btn btn-secondary" href="/profile">Edit your profile</a>
   <?php if (!empty($participant['is_admin'])): ?>
     <a class="btn btn-secondary" href="/admin/games">Admin: sync games</a>
+    <a class="btn btn-secondary" href="/admin/payments">Admin: payments</a>
   <?php endif; ?>
 </div>

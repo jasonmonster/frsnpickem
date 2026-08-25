@@ -17,6 +17,9 @@ require_once __DIR__ . '/src/Pick.php';
 require_once __DIR__ . '/src/TiebreakerAnswer.php';
 require_once __DIR__ . '/src/Grading.php';
 require_once __DIR__ . '/src/Leaderboard.php';
+require_once __DIR__ . '/src/Payment.php';
+require_once __DIR__ . '/src/WeeklyResult.php';
+require_once __DIR__ . '/src/TrashTalk.php';
 require_once __DIR__ . '/src/View.php';
 
 use Pickem\Auth;
@@ -25,11 +28,14 @@ use Pickem\Grading;
 use Pickem\Leaderboard;
 use Pickem\NflTeam;
 use Pickem\Participant;
+use Pickem\Payment;
 use Pickem\Photo;
 use Pickem\Pick;
 use Pickem\Season;
 use Pickem\TiebreakerAnswer;
+use Pickem\TrashTalk;
 use Pickem\View;
+use Pickem\WeeklyResult;
 
 Auth::start();
 
@@ -303,6 +309,125 @@ if ($path === '/admin/games/sync' && $method === 'POST') {
         'success' => $success,
         'error' => $error,
     ]);
+    exit;
+}
+
+// --- Admin: payment log + weekly finalize -------------------------------------------------------------
+if ($path === '/admin/payments' && $method === 'GET') {
+    $me = Auth::requireAdmin();
+    $season = Season::find((int) $me['season_id']);
+    $week = (int) ($_GET['week'] ?? Season::currentWeek((int) $me['season_id']));
+    View::render('admin-payments', [
+        'pageTitle' => 'Admin — payments',
+        'week' => $week,
+        'season' => $season,
+        'statuses' => Payment::statusForWeek((int) $season['id'], $week),
+        'result' => WeeklyResult::find((int) $season['id'], $week),
+    ]);
+    exit;
+}
+
+if ($path === '/admin/payments' && $method === 'POST') {
+    $me = Auth::requireAdmin();
+    $season = Season::find((int) $me['season_id']);
+    $week = (int) ($_POST['week'] ?? Season::currentWeek((int) $me['season_id']));
+
+    $statuses = Payment::statusForWeek((int) $season['id'], $week);
+    foreach ($statuses as $s) {
+        $paid = isset($_POST['paid_' . $s['id']]);
+        Payment::setPaid((int) $s['id'], $week, $paid, (string) $me['username']);
+    }
+
+    View::render('admin-payments', [
+        'pageTitle' => 'Admin — payments',
+        'week' => $week,
+        'season' => $season,
+        'statuses' => Payment::statusForWeek((int) $season['id'], $week),
+        'result' => WeeklyResult::find((int) $season['id'], $week),
+        'success' => 'Payments saved for week ' . $week . '.',
+    ]);
+    exit;
+}
+
+if ($path === '/admin/weekly-results/finalize' && $method === 'POST') {
+    $me = Auth::requireAdmin();
+    $season = Season::find((int) $me['season_id']);
+    $week = (int) ($_POST['week'] ?? Season::currentWeek((int) $me['season_id']));
+
+    $success = null;
+    $error = null;
+    try {
+        WeeklyResult::finalize((int) $season['id'], $week);
+        $success = "Week $week finalized.";
+    } catch (\RuntimeException $e) {
+        $error = $e->getMessage();
+    }
+
+    View::render('admin-payments', [
+        'pageTitle' => 'Admin — payments',
+        'week' => $week,
+        'season' => $season,
+        'statuses' => Payment::statusForWeek((int) $season['id'], $week),
+        'result' => WeeklyResult::find((int) $season['id'], $week),
+        'success' => $success,
+        'error' => $error,
+    ]);
+    exit;
+}
+
+// --- Results (official, finalized weeks) -------------------------------------------------------------
+if ($path === '/results' && $method === 'GET') {
+    $me = Auth::requireLogin();
+    $season = Season::find((int) $me['season_id']);
+    View::render('results', [
+        'pageTitle' => 'Results',
+        'season' => $season,
+        'weeklyResults' => WeeklyResult::forSeason((int) $season['id']),
+        'seasonHoldbackCents' => WeeklyResult::seasonHoldbackCents((int) $season['id']),
+    ]);
+    exit;
+}
+
+// --- Trash talk -------------------------------------------------------------
+if ($path === '/talk' && $method === 'GET') {
+    $me = Auth::requireLogin();
+    View::render('talk', [
+        'pageTitle' => 'Trash talk',
+        'week' => Season::currentWeek((int) $me['season_id']),
+        'posts' => TrashTalk::forSeason((int) $me['season_id'], (int) $me['id']),
+    ]);
+    exit;
+}
+
+if ($path === '/talk' && $method === 'POST') {
+    $me = Auth::requireLogin();
+    $week = Season::currentWeek((int) $me['season_id']);
+    $success = null;
+    $error = null;
+    try {
+        TrashTalk::post((int) $me['season_id'], (int) $me['id'], $week, (string) ($_POST['body'] ?? ''));
+        $success = 'Posted.';
+    } catch (\InvalidArgumentException $e) {
+        $error = $e->getMessage();
+    }
+    View::render('talk', [
+        'pageTitle' => 'Trash talk',
+        'week' => $week,
+        'posts' => TrashTalk::forSeason((int) $me['season_id'], (int) $me['id']),
+        'success' => $success,
+        'error' => $error,
+    ]);
+    exit;
+}
+
+if ($path === '/talk/vote' && $method === 'POST') {
+    $me = Auth::requireLogin();
+    $postId = (int) ($_POST['post_id'] ?? 0);
+    $direction = ($_POST['direction'] ?? '') === 'down' ? -1 : 1;
+    if ($postId > 0) {
+        TrashTalk::toggleVote($postId, (int) $me['id'], $direction);
+    }
+    header('Location: /talk#talk-' . $postId);
     exit;
 }
 
