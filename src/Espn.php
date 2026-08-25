@@ -66,7 +66,8 @@ class Espn
         $errno = curl_errno($ch);
         $error = curl_error($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+        // No explicit curl_close() -- it's a deprecated no-op as of PHP 8.5
+        // (the handle frees itself when $ch goes out of scope either way).
 
         if ($body === false || $errno !== 0) {
             throw new \RuntimeException("Couldn't reach ESPN — $error. Check your connection and try again.");

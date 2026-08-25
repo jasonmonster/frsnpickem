@@ -10,6 +10,8 @@ require_once __DIR__ . '/src/Participant.php';
 require_once __DIR__ . '/src/Auth.php';
 require_once __DIR__ . '/src/Photo.php';
 require_once __DIR__ . '/src/Espn.php';
+require_once __DIR__ . '/src/ApiSports.php';
+require_once __DIR__ . '/src/SportsBlaze.php';
 require_once __DIR__ . '/src/Game.php';
 require_once __DIR__ . '/src/Pick.php';
 require_once __DIR__ . '/src/TiebreakerAnswer.php';
@@ -279,7 +281,7 @@ if ($path === '/admin/games/sync' && $method === 'POST') {
     $success = null;
     $error = null;
     try {
-        $count = Game::syncWeek((int) $season['id'], $week, (int) $season['year']);
+        $count = Game::syncWeekFromSportsBlaze((int) $season['id'], $week, (int) $season['year']);
         $success = "Synced $count game" . ($count === 1 ? '' : 's') . " for week $week.";
     } catch (\RuntimeException $e) {
         $error = $e->getMessage();

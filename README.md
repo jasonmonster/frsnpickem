@@ -149,11 +149,25 @@ Admins get an "Admin: sync games" link on the dashboard and can hit
 
 ## Syncing games (admin, on demand — no cron locally)
 
-From `/admin/games`, pick a week and hit "Sync from ESPN." Safe to run
-repeatedly — it upserts by ESPN's event id rather than duplicating. In
-production this same code path (`Game::syncWeek()`) is what a cron job will
-call; the admin button is just the manual trigger for local dev, where
-there's no cron daemon running.
+From `/admin/games`, pick a week and hit "Sync week N." Safe to run
+repeatedly — it upserts by event id rather than duplicating. In production
+this same code path (`Game::syncWeekFromApiSports()`) is what a cron job
+will eventually call; the admin button is just the manual trigger for local
+dev, where there's no cron daemon running.
+
+**Needs an API-Sports key.** The sync pulls from api-sports.io, not ESPN
+(ESPN's endpoint 403s every non-browser client — Akamai bot-detection
+fingerprints the TLS handshake itself, confirmed via a plain curl test, not
+fixable from PHP). Sign up for a free key at api-sports.io (100
+requests/day, plenty for weekly syncing plus the future live-score cron —
+see Section 7 of the build plan for the math) and add it to `.env`:
+
+```
+API_SPORTS_KEY=your_key_here
+```
+
+Without it, the sync button fails with a clear "API_SPORTS_KEY is not set"
+error rather than a silent/confusing one.
 
 ## Wiping test data
 

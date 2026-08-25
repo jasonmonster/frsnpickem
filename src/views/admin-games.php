@@ -13,7 +13,7 @@ use Pickem\View;
 <div class="card">
   <span class="kicker">Admin</span>
   <h1>Games — week <?= (int) $week ?></h1>
-  <p class="subtitle">Pulls the week's matchups and kickoff times straight from ESPN. Safe to run again — it updates in place rather than duplicating.</p>
+  <p class="subtitle">Pulls the week's matchups and kickoff times for the week. Safe to run again — it updates in place rather than duplicating.</p>
 
   <?php if (!empty($error)): ?><div class="error"><?= View::e($error) ?></div><?php endif; ?>
   <?php if (!empty($success)): ?><div class="success"><?= View::e($success) ?></div><?php endif; ?>
@@ -28,7 +28,7 @@ use Pickem\View;
 
   <form method="post" action="/admin/games/sync">
     <input type="hidden" name="week" value="<?= (int) $week ?>">
-    <button type="submit">Sync week <?= (int) $week ?> from ESPN</button>
+    <button type="submit">Sync week <?= (int) $week ?></button>
   </form>
 
   <hr style="margin:24px 0;border:none;border-top:1px solid var(--navy-tint)">

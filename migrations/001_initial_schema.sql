@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS games (
   id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   season_id       INT UNSIGNED NOT NULL,
   week_number     TINYINT UNSIGNED NOT NULL,
-  espn_event_id   VARCHAR(32) NOT NULL,
+  espn_event_id   VARCHAR(64) NOT NULL,
   home_team_id    SMALLINT UNSIGNED NOT NULL,
   away_team_id    SMALLINT UNSIGNED NOT NULL,
   kickoff_at      DATETIME NOT NULL,
