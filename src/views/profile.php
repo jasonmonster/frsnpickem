@@ -1,6 +1,11 @@
 <?php
-/** @var array $participant @var array $teams @var string|null $error @var string|null $success */
+/** @var array $participant @var array $teams @var array $collegeTeams @var string|null $error @var string|null $success */
+use Pickem\CollegeTeam;
+use Pickem\NflTeam;
 use Pickem\View;
+
+$favoriteNfl = !empty($participant['favorite_nfl_team_id']) ? NflTeam::find((int) $participant['favorite_nfl_team_id']) : null;
+$favoriteCollege = !empty($participant['favorite_college_team_id']) ? CollegeTeam::find((int) $participant['favorite_college_team_id']) : null;
 ?>
 <div class="card">
   <span class="kicker">Your Profile</span>
@@ -23,6 +28,23 @@ use Pickem\View;
       <?php endif; ?>
     </div>
   </div>
+
+  <?php if ($favoriteNfl || $favoriteCollege): ?>
+    <div style="margin-top:16px; display:flex; flex-direction:column; gap:10px;">
+      <?php if ($favoriteNfl): ?>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <img src="/assets/team-logos/<?= View::e(NflTeam::logoStd($favoriteNfl)) ?>" alt="" style="width:28px;height:28px;object-fit:contain;">
+          <span style="font-size:14px; color:var(--ink);">Roots for the <?= View::e($favoriteNfl['name']) ?></span>
+        </div>
+      <?php endif; ?>
+      <?php if ($favoriteCollege): ?>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <img src="/assets/team-logos/<?= View::e(CollegeTeam::logoStd($favoriteCollege)) ?>" alt="" style="width:28px;height:28px;object-fit:contain;">
+          <span style="font-size:14px; color:var(--ink);">College pick: <?= View::e($favoriteCollege['name']) ?></span>
+        </div>
+      <?php endif; ?>
+    </div>
+  <?php endif; ?>
 
   <form method="post" action="/profile/photo" enctype="multipart/form-data">
     <label for="photo">Change photo</label>
@@ -57,8 +79,15 @@ use Pickem\View;
       <?php endforeach; ?>
     </select>
 
-    <label for="favorite_college_team">Favorite college team</label>
-    <input type="text" id="favorite_college_team" name="favorite_college_team" value="<?= View::e($participant['favorite_college_team']) ?>">
+    <label for="favorite_college_team_id">Favorite college team</label>
+    <select id="favorite_college_team_id" name="favorite_college_team_id">
+      <option value="">— pick one —</option>
+      <?php foreach ($collegeTeams as $team): ?>
+        <option value="<?= (int) $team['espn_id'] ?>" <?= ((int) ($participant['favorite_college_team_id'] ?? 0) === (int) $team['espn_id']) ? 'selected' : '' ?>>
+          <?= View::e($team['name']) ?>
+        </option>
+      <?php endforeach; ?>
+    </select>
 
     <label for="lodge_affiliation">Are you an Elk?</label>
     <select id="lodge_affiliation" name="lodge_affiliation" required>

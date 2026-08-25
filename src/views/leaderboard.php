@@ -48,7 +48,7 @@ use Pickem\View;
           <td>
             <span class="standings-player">
               <img class="avatar" src="<?= View::e(View::avatarUrl($p)) ?>" alt="">
-              <span><?= View::e(Participant::displayName($p)) ?></span>
+              <span><a href="/players/<?= View::e($p['username']) ?>" class="player-link"><?= View::e(Participant::displayName($p)) ?></a></span>
               <?php
                 $pid = (int) $p['id'];
                 $lodge = Badge::lodgeBadge($p);

@@ -54,20 +54,20 @@ class Participant
 
         $stmt = Database::connect()->prepare(
             'INSERT INTO participants
-                (season_id, username, pin_hash, first_name, last_name, contact_email, favorite_nfl_team_id, favorite_college_team, bio, lodge_affiliation)
-             VALUES (:season_id, :username, :pin_hash, :first_name, :last_name, :contact_email, :favorite_nfl_team_id, :favorite_college_team, :bio, :lodge_affiliation)'
+                (season_id, username, pin_hash, first_name, last_name, contact_email, favorite_nfl_team_id, favorite_college_team_id, bio, lodge_affiliation)
+             VALUES (:season_id, :username, :pin_hash, :first_name, :last_name, :contact_email, :favorite_nfl_team_id, :favorite_college_team_id, :bio, :lodge_affiliation)'
         );
         $stmt->execute([
-            ':season_id'              => $seasonId,
-            ':username'               => $username,
-            ':pin_hash'               => password_hash($pin, PASSWORD_DEFAULT),
-            ':first_name'             => $firstName,
-            ':last_name'              => $lastName,
-            ':contact_email'          => trim($data['contact_email'] ?? '') ?: null,
-            ':favorite_nfl_team_id'   => !empty($data['favorite_nfl_team_id']) ? (int) $data['favorite_nfl_team_id'] : null,
-            ':favorite_college_team'  => trim($data['favorite_college_team'] ?? '') ?: null,
-            ':bio'                    => $bio ?: null,
-            ':lodge_affiliation'      => $lodgeAffiliation,
+            ':season_id'                 => $seasonId,
+            ':username'                  => $username,
+            ':pin_hash'                  => password_hash($pin, PASSWORD_DEFAULT),
+            ':first_name'                => $firstName,
+            ':last_name'                 => $lastName,
+            ':contact_email'             => trim($data['contact_email'] ?? '') ?: null,
+            ':favorite_nfl_team_id'      => !empty($data['favorite_nfl_team_id']) ? (int) $data['favorite_nfl_team_id'] : null,
+            ':favorite_college_team_id'  => !empty($data['favorite_college_team_id']) ? (int) $data['favorite_college_team_id'] : null,
+            ':bio'                       => $bio ?: null,
+            ':lodge_affiliation'         => $lodgeAffiliation,
         ]);
 
         return self::find((int) Database::connect()->lastInsertId());
@@ -92,20 +92,20 @@ class Participant
                 last_name = :last_name,
                 contact_email = :contact_email,
                 favorite_nfl_team_id = :favorite_nfl_team_id,
-                favorite_college_team = :favorite_college_team,
+                favorite_college_team_id = :favorite_college_team_id,
                 bio = :bio,
                 lodge_affiliation = :lodge_affiliation
              WHERE id = :id'
         );
         $stmt->execute([
-            ':first_name'            => $firstName,
-            ':last_name'             => $lastName,
-            ':contact_email'         => trim($data['contact_email'] ?? '') ?: null,
-            ':favorite_nfl_team_id'  => !empty($data['favorite_nfl_team_id']) ? (int) $data['favorite_nfl_team_id'] : null,
-            ':favorite_college_team' => trim($data['favorite_college_team'] ?? '') ?: null,
-            ':bio'                   => $bio ?: null,
-            ':lodge_affiliation'     => $lodgeAffiliation,
-            ':id'                    => $id,
+            ':first_name'               => $firstName,
+            ':last_name'                => $lastName,
+            ':contact_email'            => trim($data['contact_email'] ?? '') ?: null,
+            ':favorite_nfl_team_id'     => !empty($data['favorite_nfl_team_id']) ? (int) $data['favorite_nfl_team_id'] : null,
+            ':favorite_college_team_id' => !empty($data['favorite_college_team_id']) ? (int) $data['favorite_college_team_id'] : null,
+            ':bio'                      => $bio ?: null,
+            ':lodge_affiliation'        => $lodgeAffiliation,
+            ':id'                       => $id,
         ]);
 
         return self::find($id);

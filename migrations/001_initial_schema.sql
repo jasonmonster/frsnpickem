@@ -31,26 +31,42 @@ CREATE TABLE IF NOT EXISTS nfl_teams (
   logo_white    VARCHAR(128) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS college_teams (
+  espn_id       INT UNSIGNED PRIMARY KEY,
+  slug          VARCHAR(128) NOT NULL,
+  name          VARCHAR(128) NOT NULL,
+  short_name    VARCHAR(64) NOT NULL,
+  abbr          VARCHAR(8) NOT NULL,
+  color_primary CHAR(7) NOT NULL,
+  color_secondary CHAR(7) NOT NULL,
+  on_navy       ENUM('std','dark','white') NOT NULL DEFAULT 'std',
+  logo_std      VARCHAR(160) NOT NULL,
+  logo_dark     VARCHAR(160) NOT NULL,
+  logo_white    VARCHAR(160) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS participants (
-  id                    INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  season_id             INT UNSIGNED NOT NULL,
-  username              VARCHAR(32) NOT NULL,
-  pin_hash              VARCHAR(255) NOT NULL,
-  first_name            VARCHAR(64) NOT NULL,
-  last_name             VARCHAR(64) NOT NULL,
-  contact_email         VARCHAR(255) NULL,
-  photo_path            VARCHAR(255) NULL,
-  favorite_nfl_team_id  SMALLINT UNSIGNED NULL,
-  favorite_college_team VARCHAR(128) NULL,
-  bio                   VARCHAR(160) NULL,
-  lodge_affiliation     ENUM('den_17','other','not_elk') NULL,
-  is_admin              TINYINT(1) NOT NULL DEFAULT 0,
-  is_active             TINYINT(1) NOT NULL DEFAULT 1,
-  created_at            DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at            DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  id                       INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  season_id                INT UNSIGNED NOT NULL,
+  username                 VARCHAR(32) NOT NULL,
+  pin_hash                 VARCHAR(255) NOT NULL,
+  first_name               VARCHAR(64) NOT NULL,
+  last_name                VARCHAR(64) NOT NULL,
+  contact_email            VARCHAR(255) NULL,
+  photo_path               VARCHAR(255) NULL,
+  favorite_nfl_team_id     SMALLINT UNSIGNED NULL,
+  favorite_college_team    VARCHAR(128) NULL, -- deprecated Session 10, superseded by favorite_college_team_id below; kept rather than dropped since it's harmless and unused
+  favorite_college_team_id INT UNSIGNED NULL,
+  bio                      VARCHAR(160) NULL,
+  lodge_affiliation        ENUM('den_17','other','not_elk') NULL,
+  is_admin                 TINYINT(1) NOT NULL DEFAULT 0,
+  is_active                TINYINT(1) NOT NULL DEFAULT 1,
+  created_at               DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at               DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uq_participants_season_username (season_id, username),
   CONSTRAINT fk_participants_season FOREIGN KEY (season_id) REFERENCES seasons(id),
-  CONSTRAINT fk_participants_fav_team FOREIGN KEY (favorite_nfl_team_id) REFERENCES nfl_teams(espn_id)
+  CONSTRAINT fk_participants_fav_team FOREIGN KEY (favorite_nfl_team_id) REFERENCES nfl_teams(espn_id),
+  CONSTRAINT fk_participants_fav_college FOREIGN KEY (favorite_college_team_id) REFERENCES college_teams(espn_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS games (

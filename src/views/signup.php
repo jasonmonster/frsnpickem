@@ -3,6 +3,7 @@
  * @var string|null $error
  * @var array $old
  * @var array $teams
+ * @var array $collegeTeams
  */
 use Pickem\View;
 $old = $old ?? [];
@@ -52,8 +53,15 @@ $old = $old ?? [];
       <?php endforeach; ?>
     </select>
 
-    <label for="favorite_college_team">Favorite college team <span style="text-transform:none;font-weight:400;color:var(--muted)">(optional, just for fun)</span></label>
-    <input type="text" id="favorite_college_team" name="favorite_college_team" value="<?= View::e($old['favorite_college_team'] ?? '') ?>" placeholder="e.g. Colorado Buffaloes">
+    <label for="favorite_college_team_id">Favorite college team <span style="text-transform:none;font-weight:400;color:var(--muted)">(optional, just for fun)</span></label>
+    <select id="favorite_college_team_id" name="favorite_college_team_id">
+      <option value="">— pick one —</option>
+      <?php foreach ($collegeTeams as $team): ?>
+        <option value="<?= (int) $team['espn_id'] ?>" <?= (($old['favorite_college_team_id'] ?? '') == $team['espn_id']) ? 'selected' : '' ?>>
+          <?= View::e($team['name']) ?>
+        </option>
+      <?php endforeach; ?>
+    </select>
 
     <label for="lodge_affiliation">Are you an Elk?</label>
     <select id="lodge_affiliation" name="lodge_affiliation" required>

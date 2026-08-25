@@ -50,7 +50,7 @@ use Pickem\View;
         <img class="avatar" src="<?= View::e(View::avatarUrl($post)) ?>" alt="">
         <div class="talk-post-body">
           <div class="talk-post-meta">
-            <span class="name"><?= View::e(Participant::displayName($post)) ?></span>
+            <span class="name"><a href="/players/<?= View::e($post['username']) ?>" class="player-link"><?= View::e(Participant::displayName($post)) ?></a></span>
             <?php $lodge = Badge::lodgeBadge($post); ?>
             <?php if ($lodge): ?><span class="badge-chip"><?= $lodge['emoji'] ?></span><?php endif; ?>
             <?php if (($championId ?? null) === (int) $post['participant_id']): ?><span class="badge-chip" title="Trash Talk Champion">👑</span><?php endif; ?>

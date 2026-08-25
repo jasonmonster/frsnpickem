@@ -6,6 +6,7 @@ require_once __DIR__ . '/src/Env.php';
 require_once __DIR__ . '/src/Database.php';
 require_once __DIR__ . '/src/Season.php';
 require_once __DIR__ . '/src/NflTeam.php';
+require_once __DIR__ . '/src/CollegeTeam.php';
 require_once __DIR__ . '/src/Participant.php';
 require_once __DIR__ . '/src/Auth.php';
 require_once __DIR__ . '/src/Photo.php';
@@ -25,6 +26,7 @@ require_once __DIR__ . '/src/View.php';
 
 use Pickem\Auth;
 use Pickem\Badge;
+use Pickem\CollegeTeam;
 use Pickem\Game;
 use Pickem\Grading;
 use Pickem\Leaderboard;
@@ -65,7 +67,7 @@ if ($path === '/' && $method === 'GET') {
 
 // --- Signup -------------------------------------------------------------
 if ($path === '/signup' && $method === 'GET') {
-    View::render('signup', ['pageTitle' => "Sign up — FRSN Pick'em", 'teams' => NflTeam::all()]);
+    View::render('signup', ['pageTitle' => "Sign up — FRSN Pick'em", 'teams' => NflTeam::all(), 'collegeTeams' => CollegeTeam::all()]);
     exit;
 }
 
@@ -75,6 +77,7 @@ if ($path === '/signup' && $method === 'POST') {
         View::render('signup', [
             'pageTitle' => "Sign up — FRSN Pick'em",
             'teams' => NflTeam::all(),
+            'collegeTeams' => CollegeTeam::all(),
             'error' => 'Signups are closed right now — no active season. Check back soon.',
             'old' => $_POST,
         ]);
@@ -101,6 +104,7 @@ if ($path === '/signup' && $method === 'POST') {
         View::render('signup', [
             'pageTitle' => "Sign up — FRSN Pick'em",
             'teams' => NflTeam::all(),
+            'collegeTeams' => CollegeTeam::all(),
             'error' => $e->getMessage(),
             'old' => $_POST,
         ]);
@@ -147,6 +151,7 @@ if ($path === '/profile' && $method === 'GET') {
         'pageTitle' => 'Your profile',
         'participant' => $me,
         'teams' => NflTeam::all(),
+        'collegeTeams' => CollegeTeam::all(),
         'badges' => Badge::chipsFor($me, (int) $me['season_id']),
     ]);
     exit;
@@ -160,6 +165,7 @@ if ($path === '/profile' && $method === 'POST') {
             'pageTitle' => 'Your profile',
             'participant' => $updated,
             'teams' => NflTeam::all(),
+            'collegeTeams' => CollegeTeam::all(),
             'badges' => Badge::chipsFor($updated, (int) $me['season_id']),
             'success' => 'Profile updated.',
         ]);
@@ -168,6 +174,7 @@ if ($path === '/profile' && $method === 'POST') {
             'pageTitle' => 'Your profile',
             'participant' => Participant::find((int) $me['id']),
             'teams' => NflTeam::all(),
+            'collegeTeams' => CollegeTeam::all(),
             'badges' => Badge::chipsFor($me, (int) $me['season_id']),
             'error' => $e->getMessage(),
         ]);
@@ -184,6 +191,7 @@ if ($path === '/profile/photo' && $method === 'POST') {
             'pageTitle' => 'Your profile',
             'participant' => Participant::find((int) $me['id']),
             'teams' => NflTeam::all(),
+            'collegeTeams' => CollegeTeam::all(),
             'badges' => Badge::chipsFor($me, (int) $me['season_id']),
             'success' => 'Photo updated.',
         ]);
@@ -192,6 +200,7 @@ if ($path === '/profile/photo' && $method === 'POST') {
             'pageTitle' => 'Your profile',
             'participant' => $me,
             'teams' => NflTeam::all(),
+            'collegeTeams' => CollegeTeam::all(),
             'badges' => Badge::chipsFor($me, (int) $me['season_id']),
             'error' => $e->getMessage(),
         ]);
@@ -207,6 +216,7 @@ if ($path === '/profile/pin' && $method === 'POST') {
             'pageTitle' => 'Your profile',
             'participant' => Participant::find((int) $me['id']),
             'teams' => NflTeam::all(),
+            'collegeTeams' => CollegeTeam::all(),
             'badges' => Badge::chipsFor($me, (int) $me['season_id']),
             'success' => 'PIN updated.',
         ]);
@@ -215,10 +225,29 @@ if ($path === '/profile/pin' && $method === 'POST') {
             'pageTitle' => 'Your profile',
             'participant' => $me,
             'teams' => NflTeam::all(),
+            'collegeTeams' => CollegeTeam::all(),
             'badges' => Badge::chipsFor($me, (int) $me['season_id']),
             'error' => $e->getMessage(),
         ]);
     }
+    exit;
+}
+
+// --- Public player view (read-only, any logged-in participant can view anyone's) -------------------------------------------------------------
+if (preg_match('#^/players/([a-z0-9_.]{3,32})$#', $path, $m) && $method === 'GET') {
+    $me = Auth::requireLogin();
+    $player = Participant::findByUsername((int) $me['season_id'], strtolower($m[1]));
+    if ($player === null || !$player['is_active']) {
+        http_response_code(404);
+        echo 'Player not found.';
+        exit;
+    }
+    View::render('player', [
+        'pageTitle' => Participant::displayName($player) . " — FRSN Pick'em",
+        'player' => $player,
+        'badges' => Badge::chipsFor($player, (int) $me['season_id']),
+        'isSelf' => (int) $player['id'] === (int) $me['id'],
+    ]);
     exit;
 }
 
