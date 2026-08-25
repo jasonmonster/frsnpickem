@@ -26,32 +26,34 @@ $renderGameRow = function (array $game, bool $locked) use ($teams, $picks) {
         return; // team data missing — shouldn't happen once teams are seeded, but don't fatal on it
     }
     $chosen = $picks[$game['id']] ?? null;
+    $name = 'pick_' . (int) $game['id'];
     ?>
     <div class="game-row">
-      <div class="matchup">
-        <span class="team-pick">
-          <img class="team-logo" src="/assets/team-logos/<?= View::e(NflTeam::logoOnNavy($away)) ?>" alt="">
-          <?= View::e($away['short_name']) ?>
-        </span>
-        <span class="at">@</span>
-        <span class="team-pick">
-          <img class="team-logo" src="/assets/team-logos/<?= View::e(NflTeam::logoOnNavy($home)) ?>" alt="">
-          <?= View::e($home['short_name']) ?>
-        </span>
-        <span class="kickoff"><?= View::e(Game::formatKickoff($game['kickoff_at'])) ?><?= $game['is_tiebreaker'] ? ' · tiebreaker game' : '' ?></span>
+      <div class="game-meta">
+        <span class="kickoff"><?= View::e(Game::formatKickoff($game['kickoff_at'])) ?></span>
+        <?php if ($game['is_tiebreaker']): ?><span class="tiebreaker-tag">Tiebreaker</span><?php endif; ?>
       </div>
-      <div class="pick-choice">
-        <label>
-          <input type="radio" name="pick_<?= (int) $game['id'] ?>" value="<?= (int) $game['away_team_id'] ?>"
+      <div class="matchup-picks">
+        <label class="team-pick team-pick--away" style="background-color: <?= View::e($away['color_primary']) ?>">
+          <input type="radio" name="<?= $name ?>" value="<?= (int) $game['away_team_id'] ?>"
             <?= $chosen === (int) $game['away_team_id'] ? 'checked' : '' ?>
             <?= $locked ? 'disabled' : '' ?>>
-          <?= View::e($away['abbr']) ?>
+          <img class="team-pick-logo" src="/assets/team-logos/<?= View::e(NflTeam::logoStd($away)) ?>" alt="">
+          <span class="team-pick-text">
+            <span class="team-abbr"><?= View::e($away['abbr']) ?></span>
+            <span class="team-name"><?= View::e($away['short_name']) ?></span>
+          </span>
         </label>
-        <label>
-          <input type="radio" name="pick_<?= (int) $game['id'] ?>" value="<?= (int) $game['home_team_id'] ?>"
+        <span class="at">@</span>
+        <label class="team-pick team-pick--home" style="background-color: <?= View::e($home['color_primary']) ?>">
+          <input type="radio" name="<?= $name ?>" value="<?= (int) $game['home_team_id'] ?>"
             <?= $chosen === (int) $game['home_team_id'] ? 'checked' : '' ?>
             <?= $locked ? 'disabled' : '' ?>>
-          <?= View::e($home['abbr']) ?>
+          <img class="team-pick-logo" src="/assets/team-logos/<?= View::e(NflTeam::logoStd($home)) ?>" alt="">
+          <span class="team-pick-text">
+            <span class="team-abbr"><?= View::e($home['abbr']) ?></span>
+            <span class="team-name"><?= View::e($home['short_name']) ?></span>
+          </span>
         </label>
       </div>
     </div>

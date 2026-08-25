@@ -100,7 +100,7 @@ label {
 
 label:first-of-type { margin-top: 0; }
 
-input[type=text], input[type=email], input[type=password], input[type=tel], textarea, select {
+input[type=text], input[type=email], input[type=password], input[type=tel], input[type=number], textarea, select {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--gray);
@@ -244,75 +244,184 @@ button:hover, .btn:hover { filter: brightness(0.95); }
 }
 
 .game-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 0;
+  padding: 14px 0;
   border-bottom: 1px solid var(--navy-tint);
-  gap: 12px;
-  flex-wrap: wrap;
 }
 
 .game-row:last-child { border-bottom: none; }
 
-.matchup {
+.game-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  flex-wrap: wrap;
-}
-
-.team-pick {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 600;
-}
-
-.team-logo {
-  width: 22px;
-  height: 22px;
-  object-fit: contain;
-}
-
-.at {
-  color: var(--muted);
-  font-size: 12px;
+  gap: 10px;
+  margin-bottom: 8px;
 }
 
 .kickoff {
   color: var(--muted);
   font-size: 12px;
-  margin-left: 4px;
 }
 
-.pick-choice {
+.tiebreaker-tag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--navy);
+  background: var(--navy-tint);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.matchup-picks {
   display: flex;
-  gap: 14px;
-  flex-shrink: 0;
+  align-items: stretch;
+  gap: 8px;
 }
 
-.pick-choice label {
+.team-pick {
+  position: relative;
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: none;
+  min-width: 0;
+  min-height: 64px;
   margin: 0;
+  padding: 10px 14px;
+  border: 2px solid transparent;
+  border-radius: 8px;
   cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.15s ease, transform 0.1s ease;
 }
 
-.pick-choice input[type=radio] {
+.team-pick input[type=radio] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.team-pick-logo {
+  position: absolute;
+  top: 50%;
+  height: 92px;
   width: auto;
+  transform: translateY(-50%);
+  opacity: 0.97;
+  filter:
+    drop-shadow(1px 0 0 rgba(255, 255, 255, 0.85))
+    drop-shadow(-1px 0 0 rgba(255, 255, 255, 0.85))
+    drop-shadow(0 1px 0 rgba(255, 255, 255, 0.85))
+    drop-shadow(0 -1px 0 rgba(255, 255, 255, 0.85))
+    drop-shadow(0 2px 5px rgba(0, 0, 0, 0.35));
+  pointer-events: none;
 }
 
-.pick-choice input:disabled {
+.team-pick--away {
+  justify-content: flex-end;
+}
+
+.team-pick--away .team-pick-logo {
+  left: -18px;
+}
+
+.team-pick--home {
+  justify-content: flex-start;
+}
+
+.team-pick--home .team-pick-logo {
+  right: -18px;
+}
+
+.team-pick-text {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+  min-width: 0;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+}
+
+.team-pick--away .team-pick-text {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.team-pick--home .team-pick-text {
+  align-items: flex-start;
+  text-align: left;
+}
+
+.team-abbr {
+  font-weight: 900;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+}
+
+.team-name {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.team-pick:hover {
+  transform: translateY(-1px);
+}
+
+.team-pick:has(input:checked) {
+  border-color: var(--gold);
+}
+
+.team-pick:has(input:checked)::after {
+  content: '\2713';
+  position: absolute;
+  z-index: 2;
+  top: 6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--navy);
+  font-size: 11px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.team-pick--away:has(input:checked)::after {
+  right: 6px;
+}
+
+.team-pick--home:has(input:checked)::after {
+  left: 6px;
+}
+
+.team-pick:has(input:focus-visible) {
+  box-shadow: 0 0 0 3px rgba(28, 48, 94, 0.4);
+}
+
+.team-pick:has(input:disabled) {
   cursor: not-allowed;
-}
-
-.pick-choice label:has(input:disabled) {
   opacity: 0.5;
-  cursor: not-allowed;
+}
+
+.team-pick:has(input:disabled):hover {
+  transform: none;
+}
+
+.at {
+  align-self: center;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  flex-shrink: 0;
 }
