@@ -1,0 +1,6 @@
+.env
+storage/*
+!storage/.gitkeep
+.DS_Store
+*.log
+_to_delete/

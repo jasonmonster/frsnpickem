@@ -1,0 +1,41 @@
+# FRSN Pick'em — nginx server block for elkspickem.frsn.tv
+#
+# This app is the site root (no WordPress underneath it) — root points
+# straight at the app directory. Front-controller pattern: every request
+# that isn't a real static file falls through to index.php, which does its
+# own routing. Sensitive folders are protected by location blocks rather
+# than being moved outside the docroot, same approach as the planner tool's
+# data/ directory.
+#
+# Locally: Herd/Valet generate the site block automatically when you park
+# this folder — paste the `location` blocks below into the generated config
+# (Herd → this site → "Nginx configuration" or the per-site .conf under
+# ~/Library/Application Support/Herd/config/valet/Nginx/). In production,
+# these blocks go into whatever SpinupWP generates for the subdomain.
+
+server {
+    # ... SpinupWP/Herd-managed listen/server_name/ssl directives above ...
+
+    root /path/to/pickem;
+    index index.php;
+
+    # Never serve the app's internals directly.
+    location ^~ /src/       { deny all; return 404; }
+    location ^~ /migrations/{ deny all; return 404; }
+    location ^~ /storage/   { deny all; return 404; }
+    location ~ /\.env       { deny all; return 404; }
+    location ~ /\.git       { deny all; return 404; }
+
+    # Real files (assets/, favicon, etc.) serve as-is; everything else
+    # routes through the front controller.
+    location / {
+        try_files $uri /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        include fastcgi_params;
+        fastcgi_pass unix:/path/to/php-fpm.sock;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    }
+}
