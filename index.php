@@ -15,10 +15,14 @@ require_once __DIR__ . '/src/SportsBlaze.php';
 require_once __DIR__ . '/src/Game.php';
 require_once __DIR__ . '/src/Pick.php';
 require_once __DIR__ . '/src/TiebreakerAnswer.php';
+require_once __DIR__ . '/src/Grading.php';
+require_once __DIR__ . '/src/Leaderboard.php';
 require_once __DIR__ . '/src/View.php';
 
 use Pickem\Auth;
 use Pickem\Game;
+use Pickem\Grading;
+use Pickem\Leaderboard;
 use Pickem\NflTeam;
 use Pickem\Participant;
 use Pickem\Photo;
@@ -282,7 +286,11 @@ if ($path === '/admin/games/sync' && $method === 'POST') {
     $error = null;
     try {
         $count = Game::syncWeekFromSportsBlaze((int) $season['id'], $week, (int) $season['year']);
+        $graded = Grading::gradeSeason((int) $season['id']);
         $success = "Synced $count game" . ($count === 1 ? '' : 's') . " for week $week.";
+        if ($graded > 0) {
+            $success .= " Graded $graded pick" . ($graded === 1 ? '' : 's') . " from final games.";
+        }
     } catch (\RuntimeException $e) {
         $error = $e->getMessage();
     }
@@ -294,6 +302,22 @@ if ($path === '/admin/games/sync' && $method === 'POST') {
         'teams' => NflTeam::allById(),
         'success' => $success,
         'error' => $error,
+    ]);
+    exit;
+}
+
+// --- Leaderboard -------------------------------------------------------------
+if ($path === '/leaderboard' && $method === 'GET') {
+    $me = Auth::requireLogin();
+    $season = Season::find((int) $me['season_id']);
+    // Cheap and idempotent — keeps standings honest even if someone lands
+    // here between a sync and whatever else would normally trigger grading.
+    Grading::gradeSeason((int) $season['id']);
+    View::render('leaderboard', [
+        'pageTitle' => 'Standings',
+        'season' => $season,
+        'week' => Season::currentWeek((int) $me['season_id']),
+        'standings' => Leaderboard::standings((int) $season['id']),
     ]);
     exit;
 }

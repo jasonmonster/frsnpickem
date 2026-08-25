@@ -20,6 +20,7 @@ $me = Auth::currentParticipant();
   <a class="brand" href="/">FRSN Pick'em</a>
   <nav>
     <?php if ($me): ?>
+      <a href="/leaderboard">Standings</a>
       <a href="/profile"><?= View::e($me['username']) ?></a>
       <a href="/logout">Log out</a>
     <?php else: ?>

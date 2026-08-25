@@ -10,8 +10,9 @@ use Pickem\View;
       <div class="username">@<?= View::e($participant['username']) ?></div>
     </div>
   </div>
-  <p class="subtitle">You're in the pool. The weekly leaderboard and standings land in a later session — for now, get your picks in.</p>
+  <p class="subtitle">You're in the pool. Get your picks in, then check the standings to see where you land.</p>
   <a class="btn" href="/picks">Make your picks</a>
+  <a class="btn btn-secondary" href="/leaderboard">Standings</a>
   <a class="btn btn-secondary" href="/profile">Edit your profile</a>
   <?php if (!empty($participant['is_admin'])): ?>
     <a class="btn btn-secondary" href="/admin/games">Admin: sync games</a>
